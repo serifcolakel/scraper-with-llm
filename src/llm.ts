@@ -1,34 +1,39 @@
-import { Groq } from "groq-sdk";
-import dotenv from "dotenv";
-// import OpenAI from "openai";
-
-dotenv.config();
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY ?? "",
-});
+import axios from "axios";
 
 export async function extractWithLLM(content: string): Promise<any[]> {
   const prompt = `
-Extract venue information from the following HTML content.
-Return a JSON array of venue objects with fields:
-name, price, location, capacity, rating, reviews, description.
-Use null if any field is missing.
-Content:
-${content}
-`;
+      Extract venue information from the following HTML content.
+      Return a JSON array of venue objects with fields:
+      name, price, location, capacity, rating, reviews, description.
+      Use null if any field is missing.
+      Content:
+      ${content}
+      Example JSON:
+      [
+        {
+          "name": "Venue Name",
+          "price": 1000,
+          "location": "123 Venue St, City, State",
+          "capacity": 200,
+          "rating": 4.5,
+          "reviews": 50,
+          "description": "A beautiful venue for weddings."
+        }
+      ]
+      Return only the JSON array, no other text.
+  `;
 
-  const completion = await groq.chat.completions.create({
-    model: "llama3-8b-8192",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.2,
+  const response = await axios.post("http://localhost:11434/api/generate", {
+    model: "llama3.2",
+    prompt,
+    stream: false,
   });
 
-  const json = completion.choices[0]?.message?.content || "[]";
+  const text = response.data.response.trim();
   try {
-    return JSON.parse(json);
+    return JSON.parse(text);
   } catch {
-    console.error("Failed to parse LLM response:", json);
+    console.error("Failed to parse LLM response:", text);
     return [];
   }
 }
