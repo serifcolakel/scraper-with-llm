@@ -1,0 +1,16 @@
+# all env files
+*.env
+
+# all log files
+*.log
+
+# all coverage files
+*.coverage
+
+# all test files
+*.test
+
+# all cache files
+node_modules/
+
+venues.json
